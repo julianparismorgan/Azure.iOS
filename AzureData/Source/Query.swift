@@ -59,9 +59,13 @@ public class Query : Encodable {
         
         return Query()
     }
-    
-    
-    
+
+    private func isGeospatialWhereFragment(_ whereFragment: String) -> Bool {
+        return whereFragment.contains("ST_DISTANCE") ||
+               whereFragment.contains("ST_WITHIN") ||
+               whereFragment.contains("ST_INTERSECTS")
+    }
+
     public var query : String {
         
         var query = ""
@@ -76,7 +80,12 @@ public class Query : Encodable {
             
             if whereCalled && !whereFragment.isNilOrEmpty {
                 
-                query += " WHERE \(type!).\(whereFragment!)"
+                if isGeospatialWhereFragment(whereFragment!) {
+                    query += " WHERE \(whereFragment!)"
+                }
+                else {
+                    query += " WHERE \(type!).\(whereFragment!)"
+                }
                 
                 if andCalled && !andFragments.isEmpty {
                     query += " AND \(type!)."
